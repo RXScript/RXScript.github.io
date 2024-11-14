@@ -3,13 +3,13 @@
 
 ## Public Scripts
 
-[RX Universal](rxscript.github.io/rxuniversal)
-[RX GUI](rxscript.github.io/rxgui)
-[Project RX](rxscript.github.io/projectrx)
+[RX Universal](rxscript.github.io/rxuniversal.md)
+[RX GUI](rxscript.github.io/rxgui.md)
+[Project RX](rxscript.github.io/projectrx.md)
 
 ## Owner Scripts
 
-[RX Toolbox](rxscript.github.io)
+[RX Toolbox](rxscript.github.io/rxtb.md)
 
 # My Socials
 
