@@ -1,13 +1,18 @@
-# Welcome to RXScript.github.io
+# Welcome To RXScript.github.io
+## Where Would You Like To Go?
 
-This is a simple website using Markdown.
+## Public Scripts
 
-## About Me
-- I love coding
-- I share projects here
+[RX Universal](rxscript.github.io/rxuniversal)
+[RX GUI](rxscript.github.io/rxgui)
+[Project RX](rxscript.github.io/projectrx)
 
-## Projects
-- [Project 1](link_to_project)
-- [Project 2](link_to_project)
+## Owner Scripts
 
-Thank you for visiting!
+[RX Toolbox](rxscript.github.io)
+
+# My Socials
+
+[Discord](discord.gg)
+[Youtube](youtube.com/channel/e)
+[Twitter](x.com/RedExeGaming)
