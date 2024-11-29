@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lua Obfuscator</title>
+    <title>RXScripter's Obfuscation</title>
     <style>
         /* style.css */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
             background-color: #f4f4f4;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         textarea {
             width: 100%;
-            height: 200px;
+            height: 300px;
             font-family: Consolas, monospace;
             font-size: 14px;
             padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            transition: border-color 0.3s;
         }
 
         button {
@@ -34,7 +32,6 @@
             border: none;
             background-color: #007BFF;
             color: white;
-            transition: background-color 0.3s;
         }
 
         button:hover {
@@ -48,34 +45,21 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
         }
 
-        /* Dark Mode */
-        body.dark-mode {
-            background-color: #2c2c2c;
-            color: white;
-        }
-
-        body.dark-mode textarea {
-            background-color: #444;
-            color: white;
-            border-color: #555;
-        }
-
-        body.dark-mode button {
-            background-color: #333;
-            color: white;
-        }
-
-        body.dark-mode button:hover {
-            background-color: #444;
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007BFF;
+            font-size: 24px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="title">RXScripter's Obfuscation</div>
         <h2>Lua Code Obfuscator</h2>
         <textarea id="luaCode" placeholder="Paste your Lua code here"></textarea><br>
         <button onclick="obfuscateCode()">Obfuscate to loadstring</button>
@@ -84,14 +68,13 @@
         <h3>Obfuscated Code:</h3>
         <textarea id="obfuscatedCode" readonly placeholder="Obfuscated code will appear here"></textarea><br>
         <button onclick="clearText('obfuscatedCode')">Clear Output</button>
-        <button onclick="copyText('obfuscatedCode')">Copy Output</button><br>
-        <button onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+        <button onclick="copyText('obfuscatedCode')">Copy Output</button>
     </div>
 
     <script>
         // script.js
 
-        // Obfuscates the code to a loadstring format
+        // Obfuscates the code to a loadstring format using ASCII encoding
         function obfuscateCode() {
             const luaCode = document.getElementById('luaCode').value;
             if (luaCode.trim() === "") {
@@ -99,12 +82,16 @@
                 return;
             }
 
+            // Convert each character to its ASCII code and create loadstring format
             let obfuscated = 'loadstring(';
             let asciiCodes = [];
+            
             for (let i = 0; i < luaCode.length; i++) {
                 asciiCodes.push(luaCode.charCodeAt(i));
             }
-            obfuscated += '"' + asciiCodes.join('') + '")()'; // Join ASCII codes and format as loadstring
+
+            // Join ASCII codes into a string and wrap it in loadstring
+            obfuscated += '"' + asciiCodes.join('') + '")()';
             document.getElementById('obfuscatedCode').value = obfuscated;
         }
 
@@ -119,11 +106,6 @@
             textArea.select();
             document.execCommand('copy');
             alert(id === 'luaCode' ? 'Lua code copied to clipboard!' : 'Obfuscated code copied to clipboard!');
-        }
-
-        // Toggles between dark and light mode
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
         }
     </script>
 
