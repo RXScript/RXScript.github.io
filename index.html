@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RXScripter's Obfuscation</title>
+    <title>RX Obfuscation</title>
     <style>
-        /* style.css */
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
@@ -72,9 +71,7 @@
     </div>
 
     <script>
-        // script.js
-
-        // Obfuscates the code to a loadstring format using ASCII encoding
+        // Obfuscates the code to a valid Roblox-compatible loadstring format
         function obfuscateCode() {
             const luaCode = document.getElementById('luaCode').value;
             if (luaCode.trim() === "") {
@@ -82,16 +79,16 @@
                 return;
             }
 
-            // Convert each character to its ASCII code and create loadstring format
-            let obfuscated = 'loadstring(';
-            let asciiCodes = [];
-            
+            // Convert each character of the Lua code into escaped hex format
+            let escapedCode = "";
             for (let i = 0; i < luaCode.length; i++) {
-                asciiCodes.push(luaCode.charCodeAt(i));
+                escapedCode += "\\" + luaCode.charCodeAt(i).toString(16).padStart(2, '0');
             }
 
-            // Join ASCII codes into a string and wrap it in loadstring
-            obfuscated += '"' + asciiCodes.join('') + '")()';
+            // Wrap the escaped code in loadstring format
+            const obfuscated = `loadstring("${escapedCode}")()`;
+
+            // Display the obfuscated code
             document.getElementById('obfuscatedCode').value = obfuscated;
         }
 
