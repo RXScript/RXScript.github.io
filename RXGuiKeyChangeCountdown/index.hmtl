@@ -5,21 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customizable Countdown</title>
   <style>
+    /* Dark mode styling */
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #121212;
-      color: #ffffff;
+      background-color: #1e1e1e; /* Dark background */
+      color: #ffffff; /* Light text */
       margin: 0;
       padding: 20px;
     }
-    h1 {
-      font-size: 2.5em;
+    h1, h2 {
+      color: #66ffcc; /* Accent color */
     }
     #countdown {
-      font-size: 2em;
+      font-size: 2.2em;
       margin: 20px 0;
+      color: #ffcc66; /* Countdown text color */
     }
+    /* Customization Panel */
     .hidden {
       display: none;
     }
@@ -27,16 +30,45 @@
       border: 2px solid #ffffff;
       padding: 20px;
       margin-top: 20px;
-      background-color: #1e1e1e;
-    }
-    label {
-      display: block;
-      margin: 10px 0;
+      background-color: #2b2b2b; /* Slightly lighter than background */
+      border-radius: 10px;
     }
     input, button {
       margin-top: 10px;
       padding: 8px;
       font-size: 1em;
+      border: 1px solid #66ffcc;
+      border-radius: 5px;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      outline: none;
+    }
+    input:focus {
+      border-color: #ffcc66;
+    }
+    button {
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #66ffcc;
+      color: #000;
+    }
+    #password-prompt {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #2b2b2b;
+      border-radius: 10px;
+      border: 2px dashed #66ffcc;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      color: #ffffff;
+    }
+    #password-error {
+      color: #ff6666;
+      font-size: 0.9em;
     }
   </style>
 </head>
@@ -44,12 +76,12 @@
   <h1 id="title">Default Countdown</h1>
   <div id="countdown"></div>
 
-  <!-- Customization Password Prompt -->
+  <!-- Password Prompt -->
   <div id="password-prompt">
-    <p>Enter customization password:</p>
+    <p>Enter the password to access customization:</p>
     <input type="password" id="password-input" placeholder="Enter password">
     <button onclick="validatePassword()">Submit</button>
-    <p id="password-error" style="color: red; display: none;">Incorrect password!</p>
+    <p id="password-error" class="hidden">Incorrect password! Please try again.</p>
   </div>
 
   <!-- Customization Panel -->
@@ -69,69 +101,67 @@
   <script>
     const PASSWORD = "RXCustomKeyCountdown";
 
-    // Get references to elements
-    const titleElement = document.getElementById('title');
-    const countdownElement = document.getElementById('countdown');
-    const passwordPrompt = document.getElementById('password-prompt');
-    const customizationPanel = document.getElementById('customization-panel');
-    const passwordError = document.getElementById('password-error');
-    const customTitleInput = document.getElementById('custom-title');
-    const customEndTimeInput = document.getElementById('custom-endtime');
+    // DOM elements
+    const titleElement = document.getElementById("title");
+    const countdownElement = document.getElementById("countdown");
+    const passwordPrompt = document.getElementById("password-prompt");
+    const customizationPanel = document.getElementById("customization-panel");
+    const passwordError = document.getElementById("password-error");
+    const customTitleInput = document.getElementById("custom-title");
+    const customEndTimeInput = document.getElementById("custom-endtime");
 
-    // Retrieve saved settings from localStorage
-    const savedTitle = localStorage.getItem('countdownTitle') || 'Default Countdown';
-    const savedEndTime = localStorage.getItem('countdownEndTime');
+    // Load saved settings
+    const savedTitle = localStorage.getItem("countdownTitle") || "Default Countdown";
+    const savedEndTime = localStorage.getItem("countdownEndTime");
 
-    // Initialize countdown title and time
     titleElement.textContent = savedTitle;
     let countdownEndTime = savedEndTime ? new Date(savedEndTime) : null;
 
-    // Countdown timer function
+    // Update countdown
     function updateCountdown() {
       const now = new Date();
       if (countdownEndTime && countdownEndTime > now) {
-        const diff = countdownEndTime - now;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+        const timeLeft = countdownEndTime - now;
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
       } else {
-        countdownElement.textContent = "Time's up!";
+        countdownElement.textContent = "Countdown has ended!";
       }
     }
 
-    // Validate password for customization
+    // Password validation
     function validatePassword() {
-      const input = document.getElementById('password-input').value;
-      if (input === PASSWORD) {
-        passwordPrompt.classList.add('hidden');
-        customizationPanel.classList.remove('hidden');
+      const inputPassword = document.getElementById("password-input").value;
+      if (inputPassword === PASSWORD) {
+        passwordPrompt.classList.add("hidden");
+        customizationPanel.classList.remove("hidden");
         customTitleInput.value = titleElement.textContent;
-        customEndTimeInput.value = countdownEndTime
-          ? countdownEndTime.toISOString().slice(0, 16) // Format for datetime-local input
-          : '';
+        customEndTimeInput.value = countdownEndTime ? countdownEndTime.toISOString().slice(0, 16) : "";
       } else {
-        passwordError.style.display = 'block';
+        passwordError.classList.remove("hidden");
       }
     }
 
-    // Save customization settings
+    // Save customization
     function saveSettings() {
       const newTitle = customTitleInput.value;
       const newEndTime = new Date(customEndTimeInput.value);
 
-      if (!newTitle || isNaN(newEndTime)) {
-        alert('Please enter valid title and end time.');
+      if (!newTitle || isNaN(newEndTime.getTime())) {
+        alert("Please enter valid title and end time.");
         return;
       }
 
-      localStorage.setItem('countdownTitle', newTitle);
-      localStorage.setItem('countdownEndTime', newEndTime.toISOString());
+      localStorage.setItem("countdownTitle", newTitle);
+      localStorage.setItem("countdownEndTime", newEndTime.toISOString());
       titleElement.textContent = newTitle;
       countdownEndTime = newEndTime;
 
-      alert('Settings saved!');
+      alert("Settings saved successfully!");
     }
 
     // Start the countdown
