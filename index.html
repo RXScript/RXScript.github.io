@@ -3,108 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RX Obfuscation</title>
+    <title>RX Scripter's Github</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-
-        textarea {
-            width: 100%;
-            height: 300px;
-            font-family: Consolas, monospace;
-            font-size: 14px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 5px;
-            border: none;
-            background-color: #007BFF;
-            color: white;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .title {
             text-align: center;
-            margin-bottom: 20px;
-            color: #007BFF;
-            font-size: 24px;
-            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        h1 {
+            margin-top: 50px;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #1e88e5;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .button:hover {
+            background-color: #1565c0;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <div class="title">RX Obfuscation</div>
-        <h2>Lua Code Obfuscator</h2>
-        <textarea id="luaCode" placeholder="Paste your Lua code here"></textarea><br>
-        <button onclick="obfuscateCode()">Obfuscate to loadstring</button>
-        <button onclick="clearText('luaCode')">Clear Input</button>
-        <button onclick="copyText('luaCode')">Copy Input</button><br>
-        <h3>Obfuscated Code:</h3>
-        <textarea id="obfuscatedCode" readonly placeholder="Obfuscated code will appear here"></textarea><br>
-        <button onclick="clearText('obfuscatedCode')">Clear Output</button>
-        <button onclick="copyText('obfuscatedCode')">Copy Output</button>
-    </div>
-
-    <script>
-        // Obfuscates the code to a valid Roblox-compatible loadstring format
-        function obfuscateCode() {
-            const luaCode = document.getElementById('luaCode').value;
-            if (luaCode.trim() === "") {
-                alert("Please enter Lua code to obfuscate.");
-                return;
-            }
-
-            // Convert each character of the Lua code into escaped hex format
-            let escapedCode = "";
-            for (let i = 0; i < luaCode.length; i++) {
-                escapedCode += "\\" + luaCode.charCodeAt(i).toString(16).padStart(2, '0');
-            }
-
-            // Wrap the escaped code in loadstring format
-            const obfuscated = `loadstring("${escapedCode}")()`;
-
-            // Display the obfuscated code
-            document.getElementById('obfuscatedCode').value = obfuscated;
-        }
-
-        // Clears the text in the specified textarea
-        function clearText(id) {
-            document.getElementById(id).value = '';
-        }
-
-        // Copies the text from the specified textarea to clipboard
-        function copyText(id) {
-            const textArea = document.getElementById(id);
-            textArea.select();
-            document.execCommand('copy');
-            alert(id === 'luaCode' ? 'Lua code copied to clipboard!' : 'Obfuscated code copied to clipboard!');
-        }
-    </script>
-
+    <h1>RX Scripter's Github</h1>
+    <a href="https://RXScripter.github.io/RXGuiKeyChangeCountdown" class="button">RX GUI Key Change Countdown</a>
 </body>
 </html>
