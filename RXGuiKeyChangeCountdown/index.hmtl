@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizable Countdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #121212;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+    }
+    #countdown {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    .hidden {
+      display: none;
+    }
+    #customization-panel {
+      border: 2px solid #ffffff;
+      padding: 20px;
+      margin-top: 20px;
+      background-color: #1e1e1e;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+    input, button {
+      margin-top: 10px;
+      padding: 8px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Default Countdown</h1>
+  <div id="countdown"></div>
+
+  <!-- Customization Password Prompt -->
+  <div id="password-prompt">
+    <p>Enter customization password:</p>
+    <input type="password" id="password-input" placeholder="Enter password">
+    <button onclick="validatePassword()">Submit</button>
+    <p id="password-error" style="color: red; display: none;">Incorrect password!</p>
+  </div>
+
+  <!-- Customization Panel -->
+  <div id="customization-panel" class="hidden">
+    <h2>Customize Countdown</h2>
+    <label>
+      Countdown Title:
+      <input type="text" id="custom-title" placeholder="Enter title">
+    </label>
+    <label>
+      Countdown End Time (YYYY-MM-DD HH:MM:SS):
+      <input type="datetime-local" id="custom-endtime">
+    </label>
+    <button onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <script>
+    const PASSWORD = "RXCustomKeyCountdown";
+
+    // Get references to elements
+    const titleElement = document.getElementById('title');
+    const countdownElement = document.getElementById('countdown');
+    const passwordPrompt = document.getElementById('password-prompt');
+    const customizationPanel = document.getElementById('customization-panel');
+    const passwordError = document.getElementById('password-error');
+    const customTitleInput = document.getElementById('custom-title');
+    const customEndTimeInput = document.getElementById('custom-endtime');
+
+    // Retrieve saved settings from localStorage
+    const savedTitle = localStorage.getItem('countdownTitle') || 'Default Countdown';
+    const savedEndTime = localStorage.getItem('countdownEndTime');
+
+    // Initialize countdown title and time
+    titleElement.textContent = savedTitle;
+    let countdownEndTime = savedEndTime ? new Date(savedEndTime) : null;
+
+    // Countdown timer function
+    function updateCountdown() {
+      const now = new Date();
+      if (countdownEndTime && countdownEndTime > now) {
+        const diff = countdownEndTime - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+      } else {
+        countdownElement.textContent = "Time's up!";
+      }
+    }
+
+    // Validate password for customization
+    function validatePassword() {
+      const input = document.getElementById('password-input').value;
+      if (input === PASSWORD) {
+        passwordPrompt.classList.add('hidden');
+        customizationPanel.classList.remove('hidden');
+        customTitleInput.value = titleElement.textContent;
+        customEndTimeInput.value = countdownEndTime
+          ? countdownEndTime.toISOString().slice(0, 16) // Format for datetime-local input
+          : '';
+      } else {
+        passwordError.style.display = 'block';
+      }
+    }
+
+    // Save customization settings
+    function saveSettings() {
+      const newTitle = customTitleInput.value;
+      const newEndTime = new Date(customEndTimeInput.value);
+
+      if (!newTitle || isNaN(newEndTime)) {
+        alert('Please enter valid title and end time.');
+        return;
+      }
+
+      localStorage.setItem('countdownTitle', newTitle);
+      localStorage.setItem('countdownEndTime', newEndTime.toISOString());
+      titleElement.textContent = newTitle;
+      countdownEndTime = newEndTime;
+
+      alert('Settings saved!');
+    }
+
+    // Start the countdown
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
