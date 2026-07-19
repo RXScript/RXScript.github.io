@@ -3,131 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication | Script Hub</title>
+    <title>Authentication | RX's Key System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #09090b;
-            --bg-card: #141417;
+            --bg-main: #07090a;
+            --bg-card: #0d0e10;
+            --bg-inset: #050505;
+            --line: #221f20;
             --accent: #ff2a2a;
-            --accent-glow: rgba(255, 42, 42, 0.3);
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --success: #10b981;
+            --accent-dim: rgba(255, 42, 42, 0.18);
+            --amber: #ff7a1a;
+            --text-main: #f4f0f0;
+            --text-muted: #7a7071;
+            --text-faint: #3d3435;
         }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
 
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
-            background-image: radial-gradient(circle at center, #1a1a24 0%, #09090b 100%);
+            position: relative;
+            overflow: hidden;
         }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, rgba(255,42,42,0.045) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,42,42,0.045) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .scanline {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(to bottom, transparent 0%, rgba(255,42,42,0.05) 50%, transparent 100%);
+            height: 140px;
+            width: 100%;
+            animation: scan 6s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-140px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .frame { position: relative; z-index: 2; width: 90%; max-width: 420px; }
+
+        .frame-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            padding: 0 4px;
+        }
+
+        .frame-label .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-right: 6px;
+            box-shadow: 0 0 6px var(--accent);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .card {
             background-color: var(--bg-card);
-            padding: 40px;
-            border-radius: 12px;
-            border: 1px solid #27272a;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            line-height: 1.5;
-        }
-
-        .timer {
-            font-size: 13px;
-            color: var(--accent);
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            display: none;
-            margin-bottom: 24px;
-            letter-spacing: 1px;
-        }
-
-        .key-container {
-            display: none;
-            background: #000;
-            border: 1px dashed var(--accent);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 10px;
-            cursor: pointer;
+            padding: 36px 32px;
+            border-radius: 3px;
+            border: 1px solid var(--line);
+            box-shadow: 0 0 0 1px rgba(255,42,42,0.04), 0 20px 60px rgba(0, 0, 0, 0.7);
+            text-align: left;
             position: relative;
-            box-shadow: 0 0 15px var(--accent-glow);
-            transition: all 0.2s ease;
         }
 
-        .key-container:hover {
-            background: #111;
-            border-color: var(--success);
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        .corner {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--accent);
+            opacity: 0.7;
         }
+        .corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
 
-        .key-text {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--text-main);
-            letter-spacing: 2px;
-        }
+        .eyebrow { font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+        .eyebrow::before { content: "//"; color: var(--text-faint); }
 
-        .copy-hint {
-            display: block;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 8px;
-            text-transform: uppercase;
-        }
+        .title { font-family: 'Space Grotesk', sans-serif; font-size: 21px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.2px; }
+        .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6; }
 
+        .loader-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 3px solid #3f3f46;
-            border-bottom-color: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-            margin-bottom: 20px;
+            width: 20px; height: 20px; border: 2px solid var(--line); border-top-color: var(--accent);
+            border-radius: 50%; animation: rotation 0.8s linear infinite;
         }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .timer { font-size: 12px; color: var(--amber); font-weight: 500; margin-bottom: 20px; letter-spacing: 1px; border: 1px solid rgba(255,122,26,0.25); background: rgba(255,122,26,0.06); padding: 8px 12px; border-radius: 2px; display: none; }
+        .timer .label { color: var(--text-muted); font-weight: 400; margin-right: 4px; }
+
+        .key-container { background: var(--bg-inset); border: 1px dashed var(--line); padding: 22px 18px; border-radius: 3px; margin-top: 4px; cursor: pointer; position: relative; transition: all 0.25s ease; display: none; }
+        .key-container:hover { border-color: var(--accent); box-shadow: 0 0 24px var(--accent-dim); }
+        .key-container-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .key-text { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: 2px; word-break: break-all; text-shadow: 0 0 12px var(--accent-dim); }
+        .copy-hint { display: block; font-size: 11px; color: var(--text-muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        footer.foot-note { margin-top: 18px; font-size: 10px; color: var(--text-faint); text-align: center; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div id="loading-spinner" class="loader"></div>
-        <div class="title" id="status">Authenticating...</div>
-        <div class="subtitle" id="sub-status">Establishing secure connection to the server.</div>
-        <div class="timer" id="timer-box">EXPIRES IN: <span id="countdown">--:--:--</span></div>
-        
-        <div class="key-container" id="key-box" onclick="copyKey()">
-            <div class="key-text" id="key-value">LOADING...</div>
-            <span class="copy-hint" id="copy-hint">Click box to copy</span>
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <div class="frame">
+        <div class="frame-label"><span><span class="dot"></span>RX'S KEY SYSTEM</span><span>SESSION</span></div>
+        <div class="card">
+            <div class="corner tl"></div>
+            <div class="corner br"></div>
+
+            <div id="status-eyebrow" class="eyebrow">verifying...</div>
+            <div id="status-title" class="title">Authenticating</div>
+            <div id="status-subtitle" class="subtitle">Establishing connection to server.</div>
+
+            <div id="loading-spinner" class="loader-row">
+                <div class="loader"></div> <span>Please wait...</span>
+            </div>
+
+            <div id="timer-box" class="timer"><span class="label">EXPIRES IN:</span><span id="countdown" style="margin-left: 10px;">--:--:--</span></div>
+
+            <div id="key-container" class="key-container" onclick="copyKey()">
+                <div class="key-container-label">Your Key</div>
+                <div id="key-text" class="key-text">RX-XXXX-XXXX</div>
+                <span id="copy-hint" class="copy-hint">Click box to copy</span>
+            </div>
         </div>
+        <footer class="foot-note">DO NOT SHARE YOUR KEY WITH OTHERS</footer>
     </div>
 
     <script>
@@ -139,7 +173,7 @@
             const token = urlParams.get('token');
             
             if (!token) {
-                showError("Access Denied", "No valid token found. Please generate a link from the Roblox script.");
+                showError("Access Denied", "No valid token found. Generate a link from the script.");
                 return;
             }
 
@@ -155,29 +189,24 @@
                 
                 if (data.success) {
                     if (data.completedAll) {
-                        document.getElementById("status").innerText = "Verification Complete";
-                        document.getElementById("status").style.color = "var(--success)";
-                        document.getElementById("sub-status").innerText = "Your unique hardware key is ready.";
+                        document.getElementById("status-eyebrow").innerText = "verification complete";
+                        document.getElementById("status-title").innerText = "Key Unlocked";
+                        document.getElementById("status-subtitle").innerText = "Your unique hardware key is ready below.";
                         
-                        const keyBox = document.getElementById("key-box");
-                        document.getElementById("key-value").innerText = data.key;
-                        keyBox.style.display = "block";
-                        keyBox.style.borderColor = "var(--success)";
+                        document.getElementById("key-text").innerText = data.key;
+                        document.getElementById("key-container").style.display = "block";
                         
-                        // Start the timer
                         document.getElementById("timer-box").style.display = "block";
                         startTimer(data.expires);
-                        
                     } else {
-                        document.getElementById("status").innerText = "Checkpoint Reached";
-                        document.getElementById("sub-status").innerText = "Routing you to the final destination...";
-                        setTimeout(() => { window.location.href = data.nextLink; }, 1500);
+                        document.getElementById("status-title").innerText = "Redirecting...";
+                        setTimeout(() => { window.location.href = data.nextLink; }, 1000);
                     }
                 } else {
-                    showError("Authentication Failed", data.message || "Your token has expired or is invalid.");
+                    showError("Auth Failed", data.message || "Invalid or expired token.");
                 }
             } catch (err) {
-                showError("Server Offline", "Failed to connect to the validation server. It may be sleeping.");
+                showError("Server Offline", "Failed to connect to the validation server.");
             }
         }
 
@@ -190,7 +219,6 @@
                 if (distance < 0) {
                     clearInterval(countdownInterval);
                     document.getElementById("timer-box").innerHTML = "KEY HAS EXPIRED";
-                    document.getElementById("timer-box").style.color = "red";
                     return;
                 }
 
@@ -205,23 +233,17 @@
 
         function showError(title, message) {
             document.getElementById("loading-spinner").style.display = "none";
-            document.getElementById("status").innerText = title;
-            document.getElementById("status").style.color = "var(--accent)";
-            document.getElementById("sub-status").innerText = message;
+            document.getElementById("status-title").innerText = title;
+            document.getElementById("status-title").style.color = "var(--accent)";
+            document.getElementById("status-subtitle").innerText = message;
         }
 
         function copyKey() {
-            const keyText = document.getElementById("key-value").innerText;
+            const keyText = document.getElementById("key-text").innerText;
             navigator.clipboard.writeText(keyText);
-            
             const hint = document.getElementById("copy-hint");
-            hint.innerText = "COPIED TO CLIPBOARD!";
-            hint.style.color = "var(--success)";
-            
-            setTimeout(() => {
-                hint.innerText = "Click box to copy";
-                hint.style.color = "var(--text-muted)";
-            }, 2000);
+            hint.innerText = "COPIED!";
+            setTimeout(() => { hint.innerText = "Click box to copy"; }, 2000);
         }
 
         verify();
