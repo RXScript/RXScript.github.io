@@ -3,24 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Key System Verification</title>
+    <title>Authentication | Script Hub</title>
     <style>
-        body { background: #121218; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
-        .container { background: #1e1e24; padding: 40px; border-radius: 12px; border: 1px solid #2d2d3c; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; width: 90%; }
-        h1 { font-size: 24px; margin-bottom: 10px; }
-        p { color: #a0a0b0; font-size: 14px; }
-        .key-box { background: #0a0a0f; padding: 20px; margin-top: 25px; font-family: monospace; font-size: 28px; color: #00ff66; border-radius: 8px; border: 1px solid #00ff66; display: none; user-select: all; cursor: pointer; letter-spacing: 2px;}
+        :root {
+            --bg-main: #09090b;
+            --bg-card: #141417;
+            --accent: #ff2a2a;
+            --accent-glow: rgba(255, 42, 42, 0.3);
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --success: #10b981;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: radial-gradient(circle at center, #1a1a24 0%, #09090b 100%);
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transition: all 0.3s ease;
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .key-container {
+            display: none;
+            background: #000;
+            border: 1px dashed var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.2s ease;
+        }
+
+        .key-container:hover {
+            background: #111;
+            border-color: var(--success);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .key-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-main);
+            letter-spacing: 2px;
+        }
+
+        .copy-hint {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #3f3f46;
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="status">Verifying your token...</h1>
-        <p id="sub-status">Please wait while we communicate with the server.</p>
-        <div id="key-box" class="key-box" onclick="copyKey()"></div>
+
+    <div class="card">
+        <div id="loading-spinner" class="loader"></div>
+        <div class="title" id="status">Authenticating...</div>
+        <div class="subtitle" id="sub-status">Establishing secure connection to the server.</div>
+        
+        <div class="key-container" id="key-box" onclick="copyKey()">
+            <div class="key-text" id="key-value">LOADING...</div>
+            <span class="copy-hint" id="copy-hint">Click box to copy</span>
+        </div>
     </div>
 
     <script>
-        // REPLACE THIS WITH YOUR LIVE RENDER URL (NO SLASH AT THE END)
+        // ==========================================
+        // REPLACE WITH YOUR LIVE RENDER URL
+        // ==========================================
         const BACKEND_URL = "https://YOUR-RENDER-APP-NAME.onrender.com";
 
         async function verify() {
@@ -28,8 +132,7 @@
             const token = urlParams.get('token');
             
             if (!token) {
-                document.getElementById("status").innerText = "Error: No Token";
-                document.getElementById("sub-status").innerText = "You must start the process from the Roblox script.";
+                showError("Access Denied", "No valid token found. Please generate a link from the Roblox script.");
                 return;
             }
 
@@ -41,36 +144,53 @@
                 });
                 
                 const data = await response.json();
+                document.getElementById("loading-spinner").style.display = "none";
                 
                 if (data.success) {
                     if (data.completedAll) {
-                        document.getElementById("status").innerText = "Authentication Successful!";
-                        document.getElementById("sub-status").innerText = "Copy the key below and paste it into the Roblox executor.";
+                        document.getElementById("status").innerText = "Verification Complete";
+                        document.getElementById("status").style.color = "var(--success)";
+                        document.getElementById("sub-status").innerText = "Your unique hardware key has been generated.";
+                        
                         const keyBox = document.getElementById("key-box");
-                        keyBox.innerText = data.key;
+                        document.getElementById("key-value").innerText = data.key;
                         keyBox.style.display = "block";
+                        keyBox.style.borderColor = "var(--success)";
                     } else {
-                        document.getElementById("status").innerText = "Checkpoint 1 Complete!";
-                        document.getElementById("sub-status").innerText = "Redirecting you to the final step...";
+                        document.getElementById("status").innerText = "Checkpoint Reached";
+                        document.getElementById("sub-status").innerText = "Routing you to the final destination...";
                         setTimeout(() => { window.location.href = data.nextLink; }, 1500);
                     }
                 } else {
-                    document.getElementById("status").innerText = "Authentication Failed";
-                    document.getElementById("sub-status").innerText = data.message || "Invalid or expired token.";
+                    showError("Authentication Failed", data.message || "Your token has expired or is invalid.");
                 }
             } catch (err) {
-                document.getElementById("status").innerText = "Server Offline";
-                document.getElementById("sub-status").innerText = "Error linking up with the key validation server. The server might be asleep.";
+                showError("Server Offline", "Failed to connect to the validation server. It may be sleeping.");
             }
         }
 
-        function copyKey() {
-            const keyText = document.getElementById("key-box").innerText;
-            navigator.clipboard.writeText(keyText);
-            document.getElementById("sub-status").innerText = "Key copied to clipboard!";
-            document.getElementById("sub-status").style.color = "#00ff66";
+        function showError(title, message) {
+            document.getElementById("loading-spinner").style.display = "none";
+            document.getElementById("status").innerText = title;
+            document.getElementById("status").style.color = "var(--accent)";
+            document.getElementById("sub-status").innerText = message;
         }
 
+        function copyKey() {
+            const keyText = document.getElementById("key-value").innerText;
+            navigator.clipboard.writeText(keyText);
+            
+            const hint = document.getElementById("copy-hint");
+            hint.innerText = "COPIED TO CLIPBOARD!";
+            hint.style.color = "var(--success)";
+            
+            setTimeout(() => {
+                hint.innerText = "Click box to copy";
+                hint.style.color = "var(--text-muted)";
+            }, 2000);
+        }
+
+        // Boot the check immediately
         verify();
     </script>
 </body>
