@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Key System Verification Hub</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 100px; background: #0b0b0e; color: #fff; }
+        .box { background: #121218; border: 1px solid #23232f; max-width: 400px; margin: 0 auto; padding: 40px; border-radius: 12px; }
+        .btn { display: inline-block; padding: 12px 24px; background: #007acc; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 20px; font-weight: bold; }
+        .btn:hover { background: #0098ff; }
+        .success { color: #00ff88; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 id="msg">Verifying your token with the backend...</h2>
+        <a id="btn" class="btn hidden" href="#">Go to Next Checkpoint</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const msg = document.getElementById('msg');
+        const btn = document.getElementById('btn');
+
+        // CHANGE THIS to your exact deployed Render web service URL!
+        const BACKEND_URL = "https://your-render-app-name.onrender.com/verify-token";
+
+        if (!token) {
+            msg.innerText = "Error: System could not identify a valid token session. Please re-run the Roblox loader.";
+        } else {
+            fetch(BACKEND_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.completedAll) {
+                        msg.innerHTML = "<span class='success'>Success!</span><br><br>Your 24-hour script access key is now active. You may go back to Roblox.";
+                        btn.classList.add('hidden');
+                    } else {
+                        msg.innerText = "Checkpoint 1 cleared successfully!";
+                        btn.href = data.nextLink;
+                        btn.innerText = "Proceed to Checkpoint 2";
+                        btn.classList.remove('hidden');
+                    }
+                } else {
+                    msg.innerText = "Verification failed: " + data.message;
+                }
+            })
+            .catch(() => {
+                msg.innerText = "Error linking up with the key validation server.";
+            });
+        }
+    </script>
+</body>
+</html>
