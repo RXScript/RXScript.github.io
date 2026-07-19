@@ -242,6 +242,7 @@
         async function verify() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
+            const hash = urlParams.get('hash'); // Linkvertise anti-bypass appends this automatically
 
             if (!token) {
                 showError("Access Denied", "No valid token found. Generate a link from the script.");
@@ -252,7 +253,7 @@
                 const response = await fetch(`${BACKEND_URL}/verify-token`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: token })
+                    body: JSON.stringify({ token: token, hash: hash })
                 });
 
                 const data = await response.json();
