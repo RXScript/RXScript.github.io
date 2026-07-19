@@ -115,18 +115,83 @@
         .title { font-family: 'Space Grotesk', sans-serif; font-size: 21px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.2px; }
         .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6; }
 
-        .loader-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-        .loader {
-            width: 20px; height: 20px; border: 2px solid var(--line); border-top-color: var(--accent);
-            border-radius: 50%; animation: rotation 0.8s linear infinite;
+        .loader-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 4px;
         }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid var(--line);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 0.8s linear infinite;
+        }
+
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .timer { font-size: 12px; color: var(--amber); font-weight: 500; margin-bottom: 20px; letter-spacing: 1px; border: 1px solid rgba(255,122,26,0.25); background: rgba(255,122,26,0.06); padding: 8px 12px; border-radius: 2px; display: none; }
-        .timer .label { color: var(--text-muted); font-weight: 400; margin-right: 4px; }
+        .progress-track {
+            height: 2px;
+            width: 100%;
+            background: var(--line);
+            margin: 20px 0 4px;
+            overflow: hidden;
+            position: relative;
+        }
 
-        .key-container { background: var(--bg-inset); border: 1px dashed var(--line); padding: 22px 18px; border-radius: 3px; margin-top: 4px; cursor: pointer; position: relative; transition: all 0.25s ease; display: none; }
-        .key-container:hover { border-color: var(--accent); box-shadow: 0 0 24px var(--accent-dim); }
+        .progress-fill {
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 40%;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: sweep 1.4s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+
+        .timer {
+            font-size: 12px;
+            color: var(--amber);
+            font-weight: 500;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,122,26,0.25);
+            background: rgba(255,122,26,0.06);
+            padding: 8px 12px;
+            border-radius: 2px;
+            display: none;
+        }
+
+        .timer .label { color: var(--text-muted); font-weight: 400; margin-right: 4px; }
+        .timer .ms { font-size: 10px; color: var(--text-muted); }
+
+        .key-container {
+            background: var(--bg-inset);
+            border: 1px dashed var(--line);
+            padding: 22px 18px;
+            border-radius: 3px;
+            margin-top: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.25s ease;
+            display: none;
+        }
+
+        .key-container:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 24px var(--accent-dim);
+        }
+
         .key-container-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
         .key-text { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: 2px; word-break: break-all; text-shadow: 0 0 12px var(--accent-dim); }
         .copy-hint { display: block; font-size: 11px; color: var(--text-muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }
@@ -145,15 +210,21 @@
             <div class="corner tl"></div>
             <div class="corner br"></div>
 
-            <div id="status-eyebrow" class="eyebrow">verifying...</div>
+            <div id="status-eyebrow" class="eyebrow">verifying</div>
             <div id="status-title" class="title">Authenticating</div>
-            <div id="status-subtitle" class="subtitle">Establishing connection to server.</div>
+            <div id="status-subtitle" class="subtitle">Establishing secure connection to the server...</div>
 
-            <div id="loading-spinner" class="loader-row">
-                <div class="loader"></div> <span>Please wait...</span>
+            <div id="progress-area">
+                <div class="loader-row">
+                    <span id="loading-spinner" class="loader"></span>
+                    <span style="font-size:12px; color:var(--text-muted);">verifying token</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill"></div></div>
             </div>
 
-            <div id="timer-box" class="timer"><span class="label">EXPIRES IN:</span><span id="countdown" style="margin-left: 10px;">--:--:--</span></div>
+            <div id="timer-box" class="timer">
+                <span class="label">EXPIRES IN:</span><span id="countdown" style="margin-left: 10px;">--:--:--</span><span class="ms" id="countdown-ms">.000</span>
+            </div>
 
             <div id="key-container" class="key-container" onclick="copyKey()">
                 <div class="key-container-label">Your Key</div>
@@ -171,7 +242,7 @@
         async function verify() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
-            
+
             if (!token) {
                 showError("Access Denied", "No valid token found. Generate a link from the script.");
                 return;
@@ -183,23 +254,25 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ token: token })
                 });
-                
+
                 const data = await response.json();
-                document.getElementById("loading-spinner").style.display = "none";
-                
+                document.getElementById("progress-area").style.display = "none";
+
                 if (data.success) {
                     if (data.completedAll) {
                         document.getElementById("status-eyebrow").innerText = "verification complete";
                         document.getElementById("status-title").innerText = "Key Unlocked";
                         document.getElementById("status-subtitle").innerText = "Your unique hardware key is ready below.";
-                        
+
                         document.getElementById("key-text").innerText = data.key;
                         document.getElementById("key-container").style.display = "block";
-                        
+
                         document.getElementById("timer-box").style.display = "block";
                         startTimer(data.expires);
                     } else {
-                        document.getElementById("status-title").innerText = "Redirecting...";
+                        document.getElementById("status-eyebrow").innerText = "checkpoint";
+                        document.getElementById("status-title").innerText = "Checkpoint Reached";
+                        document.getElementById("status-subtitle").innerText = "Routing you to the final destination...";
                         setTimeout(() => { window.location.href = data.nextLink; }, 1000);
                     }
                 } else {
@@ -218,32 +291,42 @@
 
                 if (distance < 0) {
                     clearInterval(countdownInterval);
-                    document.getElementById("timer-box").innerHTML = "KEY HAS EXPIRED";
+                    const box = document.getElementById("timer-box");
+                    box.innerHTML = "KEY HAS EXPIRED";
+                    box.style.color = "var(--accent)";
+                    box.style.borderColor = "rgba(255,42,42,0.3)";
                     return;
                 }
 
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                const millis = Math.floor(distance % 1000);
 
-                document.getElementById("countdown").innerText = 
+                document.getElementById("countdown").innerText =
                     `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
+                document.getElementById("countdown-ms").innerText = `.${millis.toString().padStart(3, '0')}`;
+            }, 47); // sub-second tick so the milliseconds actually move
         }
 
         function showError(title, message) {
-            document.getElementById("loading-spinner").style.display = "none";
+            document.getElementById("progress-area").style.display = "none";
             document.getElementById("status-title").innerText = title;
             document.getElementById("status-title").style.color = "var(--accent)";
             document.getElementById("status-subtitle").innerText = message;
+            document.getElementById("status-eyebrow").innerText = "error";
         }
 
         function copyKey() {
             const keyText = document.getElementById("key-text").innerText;
             navigator.clipboard.writeText(keyText);
             const hint = document.getElementById("copy-hint");
-            hint.innerText = "COPIED!";
-            setTimeout(() => { hint.innerText = "Click box to copy"; }, 2000);
+            hint.innerText = "COPIED TO CLIPBOARD";
+            hint.style.color = "var(--accent)";
+            setTimeout(() => {
+                hint.innerText = "Click box to copy";
+                hint.style.color = "var(--text-muted)";
+            }, 2000);
         }
 
         verify();
