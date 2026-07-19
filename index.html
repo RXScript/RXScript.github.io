@@ -36,7 +36,6 @@
             text-align: center;
             max-width: 400px;
             width: 90%;
-            transition: all 0.3s ease;
         }
 
         .title {
@@ -50,8 +49,18 @@
         .subtitle {
             font-size: 14px;
             color: var(--text-muted);
-            margin-bottom: 24px;
+            margin-bottom: 12px;
             line-height: 1.5;
+        }
+
+        .timer {
+            font-size: 13px;
+            color: var(--accent);
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            display: none;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
         }
 
         .key-container {
@@ -60,7 +69,7 @@
             border: 1px dashed var(--accent);
             padding: 20px;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 10px;
             cursor: pointer;
             position: relative;
             box-shadow: 0 0 15px var(--accent-glow);
@@ -89,7 +98,6 @@
             text-transform: uppercase;
         }
 
-        /* Loading Animation */
         .loader {
             width: 48px;
             height: 48px;
@@ -114,6 +122,7 @@
         <div id="loading-spinner" class="loader"></div>
         <div class="title" id="status">Authenticating...</div>
         <div class="subtitle" id="sub-status">Establishing secure connection to the server.</div>
+        <div class="timer" id="timer-box">EXPIRES IN: <span id="countdown">--:--:--</span></div>
         
         <div class="key-container" id="key-box" onclick="copyKey()">
             <div class="key-text" id="key-value">LOADING...</div>
@@ -122,10 +131,8 @@
     </div>
 
     <script>
-        // ==========================================
-        // REPLACE WITH YOUR LIVE RENDER URL
-        // ==========================================
         const BACKEND_URL = "https://key-system-backend-c1.onrender.com";
+        let countdownInterval;
 
         async function verify() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -150,12 +157,17 @@
                     if (data.completedAll) {
                         document.getElementById("status").innerText = "Verification Complete";
                         document.getElementById("status").style.color = "var(--success)";
-                        document.getElementById("sub-status").innerText = "Your unique hardware key has been generated.";
+                        document.getElementById("sub-status").innerText = "Your unique hardware key is ready.";
                         
                         const keyBox = document.getElementById("key-box");
                         document.getElementById("key-value").innerText = data.key;
                         keyBox.style.display = "block";
                         keyBox.style.borderColor = "var(--success)";
+                        
+                        // Start the timer
+                        document.getElementById("timer-box").style.display = "block";
+                        startTimer(data.expires);
+                        
                     } else {
                         document.getElementById("status").innerText = "Checkpoint Reached";
                         document.getElementById("sub-status").innerText = "Routing you to the final destination...";
@@ -167,6 +179,28 @@
             } catch (err) {
                 showError("Server Offline", "Failed to connect to the validation server. It may be sleeping.");
             }
+        }
+
+        function startTimer(expirationTime) {
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const now = Date.now();
+                const distance = expirationTime - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById("timer-box").innerHTML = "KEY HAS EXPIRED";
+                    document.getElementById("timer-box").style.color = "red";
+                    return;
+                }
+
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById("countdown").innerText = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
         }
 
         function showError(title, message) {
@@ -190,7 +224,6 @@
             }, 2000);
         }
 
-        // Boot the check immediately
         verify();
     </script>
 </body>
