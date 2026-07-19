@@ -2,59 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Key System Verification Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key System Verification</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 100px; background: #0b0b0e; color: #fff; }
-        .box { background: #121218; border: 1px solid #23232f; max-width: 400px; margin: 0 auto; padding: 40px; border-radius: 12px; }
-        .btn { display: inline-block; padding: 12px 24px; background: #007acc; color: #fff; text-decoration: none; border-radius: 6px; margin-top: 20px; font-weight: bold; }
-        .btn:hover { background: #0098ff; }
-        .success { color: #00ff88; }
-        .hidden { display: none; }
+        body { background: #121218; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; }
+        .container { background: #1e1e24; padding: 40px; border-radius: 12px; border: 1px solid #2d2d3c; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 400px; width: 90%; }
+        h1 { font-size: 24px; margin-bottom: 10px; }
+        p { color: #a0a0b0; font-size: 14px; }
+        .key-box { background: #0a0a0f; padding: 20px; margin-top: 25px; font-family: monospace; font-size: 28px; color: #00ff66; border-radius: 8px; border: 1px solid #00ff66; display: none; user-select: all; cursor: pointer; letter-spacing: 2px;}
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2 id="msg">Verifying your token with the backend...</h2>
-        <a id="btn" class="btn hidden" href="#">Go to Next Checkpoint</a>
+    <div class="container">
+        <h1 id="status">Verifying your token...</h1>
+        <p id="sub-status">Please wait while we communicate with the server.</p>
+        <div id="key-box" class="key-box" onclick="copyKey()"></div>
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('btn');
+        // REPLACE THIS WITH YOUR LIVE RENDER URL (NO SLASH AT THE END)
+        const BACKEND_URL = "https://YOUR-RENDER-APP-NAME.onrender.com";
 
-        // CHANGE THIS to your exact deployed Render web service URL!
-        const BACKEND_URL = "https://your-render-app-name.onrender.com/verify-token";
+        async function verify() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                document.getElementById("status").innerText = "Error: No Token";
+                document.getElementById("sub-status").innerText = "You must start the process from the Roblox script.";
+                return;
+            }
 
-        if (!token) {
-            msg.innerText = "Error: System could not identify a valid token session. Please re-run the Roblox loader.";
-        } else {
-            fetch(BACKEND_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: token })
-            })
-            .then(res => res.json())
-            .then(data => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/verify-token`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: token })
+                });
+                
+                const data = await response.json();
+                
                 if (data.success) {
                     if (data.completedAll) {
-                        msg.innerHTML = "<span class='success'>Success!</span><br><br>Your 24-hour script access key is now active. You may go back to Roblox.";
-                        btn.classList.add('hidden');
+                        document.getElementById("status").innerText = "Authentication Successful!";
+                        document.getElementById("sub-status").innerText = "Copy the key below and paste it into the Roblox executor.";
+                        const keyBox = document.getElementById("key-box");
+                        keyBox.innerText = data.key;
+                        keyBox.style.display = "block";
                     } else {
-                        msg.innerText = "Checkpoint 1 cleared successfully!";
-                        btn.href = data.nextLink;
-                        btn.innerText = "Proceed to Checkpoint 2";
-                        btn.classList.remove('hidden');
+                        document.getElementById("status").innerText = "Checkpoint 1 Complete!";
+                        document.getElementById("sub-status").innerText = "Redirecting you to the final step...";
+                        setTimeout(() => { window.location.href = data.nextLink; }, 1500);
                     }
                 } else {
-                    msg.innerText = "Verification failed: " + data.message;
+                    document.getElementById("status").innerText = "Authentication Failed";
+                    document.getElementById("sub-status").innerText = data.message || "Invalid or expired token.";
                 }
-            })
-            .catch(() => {
-                msg.innerText = "Error linking up with the key validation server.";
-            });
+            } catch (err) {
+                document.getElementById("status").innerText = "Server Offline";
+                document.getElementById("sub-status").innerText = "Error linking up with the key validation server. The server might be asleep.";
+            }
         }
+
+        function copyKey() {
+            const keyText = document.getElementById("key-box").innerText;
+            navigator.clipboard.writeText(keyText);
+            document.getElementById("sub-status").innerText = "Key copied to clipboard!";
+            document.getElementById("sub-status").style.color = "#00ff66";
+        }
+
+        verify();
     </script>
 </body>
 </html>
