@@ -231,6 +231,12 @@
                 <div id="key-text" class="key-text">RX-XXXX-XXXX</div>
                 <span id="copy-hint" class="copy-hint">Click box to copy</span>
             </div>
+
+            <div id="referral-container" class="key-container" onclick="copyReferralCode()" style="display: none; margin-top: 12px; border-color: var(--text-faint);">
+                <div class="key-container-label">Your Referral Code — share it, get bonus time when someone uses it</div>
+                <div id="referral-text" class="key-text" style="font-size: 18px; color: var(--text-muted);">REF-XXXXXXXX</div>
+                <span id="referral-copy-hint" class="copy-hint">Click box to copy</span>
+            </div>
         </div>
         <footer class="foot-note">DO NOT SHARE YOUR KEY WITH OTHERS</footer>
     </div>
@@ -267,6 +273,11 @@
 
                         document.getElementById("key-text").innerText = data.key;
                         document.getElementById("key-container").style.display = "block";
+
+                        if (data.referralCode) {
+                            document.getElementById("referral-text").innerText = data.referralCode;
+                            document.getElementById("referral-container").style.display = "block";
+                        }
 
                         document.getElementById("timer-box").style.display = "block";
                         startTimer(data.expires);
@@ -324,6 +335,18 @@
             const hint = document.getElementById("copy-hint");
             hint.innerText = "COPIED TO CLIPBOARD";
             hint.style.color = "var(--accent)";
+            setTimeout(() => {
+                hint.innerText = "Click box to copy";
+                hint.style.color = "var(--text-muted)";
+            }, 2000);
+        }
+
+        function copyReferralCode() {
+            const refText = document.getElementById("referral-text").innerText;
+            navigator.clipboard.writeText(refText);
+            const hint = document.getElementById("referral-copy-hint");
+            hint.innerText = "COPIED TO CLIPBOARD";
+            hint.style.color = "var(--text-main)";
             setTimeout(() => {
                 hint.innerText = "Click box to copy";
                 hint.style.color = "var(--text-muted)";
