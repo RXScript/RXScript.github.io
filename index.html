@@ -3,357 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication | RX's Key System</title>
+    <title>Key Terminal | Authentication</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #07090a;
-            --bg-card: #0d0e10;
-            --bg-inset: #050505;
-            --line: #221f20;
-            --accent: #ff2a2a;
-            --accent-dim: rgba(255, 42, 42, 0.18);
-            --amber: #ff7a1a;
-            --text-main: #f4f0f0;
-            --text-muted: #7a7071;
-            --text-faint: #3d3435;
+            --accent: #d9534f;
+            --accent-dim: rgba(217,83,79,0.18);
+            --amber: #e0a63e;
+
+            --bg: #0b0d0f;
+            --panel: #111417;
+            --panel-edge: #1e2327;
+            --inset: #0a0c0e;
+            --text: #e6e9ea;
+            --muted: #7d868c;
+            --faint: #3d4247;
         }
 
         * { box-sizing: border-box; }
         html, body { height: 100%; }
 
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
-            position: relative;
-            overflow: hidden;
+            padding: 24px;
         }
 
-        .grid-bg {
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(to right, rgba(255,42,42,0.045) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,42,42,0.045) 1px, transparent 1px);
-            background-size: 42px 42px;
-            mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 70%);
-            z-index: 0;
+        .wrap { width: 100%; max-width: 400px; }
+
+        .strip {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint);
+            margin-bottom: 8px; padding: 0 4px;
         }
-
-        .scanline {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background: linear-gradient(to bottom, transparent 0%, rgba(255,42,42,0.05) 50%, transparent 100%);
-            height: 140px;
-            width: 100%;
-            animation: scan 6s linear infinite;
-            z-index: 1;
+        .strip .live { display: flex; align-items: center; gap: 6px; }
+        .strip .dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+            box-shadow: 0 0 6px var(--accent); animation: pulse-dot 2s ease-in-out infinite;
         }
-
-        @keyframes scan {
-            0% { transform: translateY(-140px); }
-            100% { transform: translateY(100vh); }
-        }
-
-        .frame { position: relative; z-index: 2; width: 90%; max-width: 420px; }
-
-        .frame-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            color: var(--text-faint);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            padding: 0 4px;
-        }
-
-        .frame-label .dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--accent);
-            margin-right: 6px;
-            box-shadow: 0 0 6px var(--accent);
-            animation: pulse-dot 2s ease-in-out infinite;
-        }
-
         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .card {
-            background-color: var(--bg-card);
-            padding: 36px 32px;
-            border-radius: 3px;
-            border: 1px solid var(--line);
-            box-shadow: 0 0 0 1px rgba(255,42,42,0.04), 0 20px 60px rgba(0, 0, 0, 0.7);
-            text-align: left;
-            position: relative;
+        .terminal { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px; overflow: hidden; }
+
+        .steps { display: flex; padding: 16px 22px 0; gap: 6px; }
+        .step { flex: 1; height: 3px; border-radius: 2px; background: var(--panel-edge); }
+        .step.done { background: var(--accent); }
+        .step.active { background: var(--accent); opacity: 0.5; }
+
+        .head { padding: 18px 22px 4px; }
+        #status-eyebrow {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
+            display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
         }
+        #status-eyebrow::before { content: "//"; color: var(--faint); }
+        #status-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 24px; }
+        #status-subtitle { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
 
-        .corner {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--accent);
-            opacity: 0.7;
-        }
-        .corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-        .corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+        #progress-area { padding: 18px 22px 4px; }
 
-        .eyebrow { font-size: 11px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
-        .eyebrow::before { content: "//"; color: var(--text-faint); }
-
-        .title { font-family: 'Space Grotesk', sans-serif; font-size: 21px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.2px; }
-        .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6; }
-
-        .loader-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 4px;
-        }
-
+        .loader-row { display: flex; align-items: center; gap: 12px; }
         .loader {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            border: 2px solid var(--line);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
+            width: 18px; height: 18px; min-width: 18px; border: 2px solid var(--panel-edge);
+            border-top-color: var(--accent); border-radius: 50%; display: inline-block;
             animation: rotation 0.8s linear infinite;
         }
+        @keyframes rotation { to { transform: rotate(360deg); } }
 
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .progress-track {
-            height: 2px;
-            width: 100%;
-            background: var(--line);
-            margin: 20px 0 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-fill {
-            position: absolute;
-            top: 0; left: 0; bottom: 0;
-            width: 40%;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            animation: sweep 1.4s ease-in-out infinite;
-        }
-
-        @keyframes sweep {
-            0% { left: -40%; }
-            100% { left: 100%; }
-        }
+        .progress-track { height: 2px; width: 100%; background: var(--panel-edge); margin: 18px 0 4px; overflow: hidden; position: relative; }
+        .progress-fill { position: absolute; top: 0; left: -40%; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: sweep 1.4s ease-in-out infinite; }
+        @keyframes sweep { to { left: 100%; } }
 
         .timer {
-            font-size: 12px;
-            color: var(--amber);
-            font-weight: 500;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255,122,26,0.25);
-            background: rgba(255,122,26,0.06);
-            padding: 8px 12px;
-            border-radius: 2px;
-            display: none;
+            margin: 18px 22px 0; font-size: 11.5px; color: var(--amber); font-weight: 500;
+            letter-spacing: 1px; border: 1px solid rgba(224,166,62,0.25); background: rgba(224,166,62,0.06);
+            padding: 9px 12px; border-radius: 5px; display: none;
         }
+        .timer .label { color: var(--muted); font-weight: 400; margin-right: 4px; }
+        .timer .ms { font-size: 10px; color: var(--muted); }
 
-        .timer .label { color: var(--text-muted); font-weight: 400; margin-right: 4px; }
-        .timer .ms { font-size: 10px; color: var(--text-muted); }
-
-        .key-container {
-            background: var(--bg-inset);
-            border: 1px dashed var(--line);
-            padding: 22px 18px;
-            border-radius: 3px;
-            margin-top: 4px;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.25s ease;
-            display: none;
+        .slot {
+            margin: 18px 22px 0; background: var(--inset); border: 1px dashed var(--panel-edge);
+            border-radius: 6px; padding: 20px 18px; text-align: center; cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease; display: none;
         }
+        .slot:hover { border-color: var(--accent); box-shadow: 0 0 24px var(--accent-dim); }
+        .slot-label { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .slot-key { font-size: 20px; font-weight: 600; color: var(--accent); letter-spacing: 1.5px; word-break: break-all; }
+        .slot-hint { display: block; font-size: 10.5px; color: var(--muted); margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .key-container:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 24px var(--accent-dim);
+        .foot {
+            padding: 16px 22px; border-top: 1px solid var(--panel-edge); margin-top: 20px;
+            font-size: 10px; color: var(--faint); text-align: center; letter-spacing: 1px;
         }
-
-        .key-container-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
-        .key-text { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: 2px; word-break: break-all; text-shadow: 0 0 12px var(--accent-dim); }
-        .copy-hint { display: block; font-size: 11px; color: var(--text-muted); margin-top: 12px; text-transform: uppercase; letter-spacing: 1px; }
-
-        footer.foot-note { margin-top: 18px; font-size: 10px; color: var(--text-faint); text-align: center; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div class="grid-bg"></div>
-    <div class="scanline"></div>
+<div class="wrap">
+    <div class="strip"><span class="live"><span class="dot"></span>key terminal</span><span>session</span></div>
 
-    <div class="frame">
-        <div class="frame-label"><span><span class="dot"></span>RX'S KEY SYSTEM</span><span>SESSION</span></div>
-        <div class="card">
-            <div class="corner tl"></div>
-            <div class="corner br"></div>
-
-            <div id="status-eyebrow" class="eyebrow">verifying</div>
-            <div id="status-title" class="title">Authenticating</div>
-            <div id="status-subtitle" class="subtitle">Establishing secure connection to the server...</div>
-
-            <div id="progress-area">
-                <div class="loader-row">
-                    <span id="loading-spinner" class="loader"></span>
-                    <span style="font-size:12px; color:var(--text-muted);">verifying token</span>
-                </div>
-                <div class="progress-track"><div class="progress-fill"></div></div>
-            </div>
-
-            <div id="timer-box" class="timer">
-                <span class="label">EXPIRES IN:</span><span id="countdown" style="margin-left: 10px;">--:--:--</span><span class="ms" id="countdown-ms">.000</span>
-            </div>
-
-            <div id="key-container" class="key-container" onclick="copyKey()">
-                <div class="key-container-label">Your Key</div>
-                <div id="key-text" class="key-text">RX-XXXX-XXXX</div>
-                <span id="copy-hint" class="copy-hint">Click box to copy</span>
-            </div>
-
-            <div id="referral-container" class="key-container" onclick="copyReferralCode()" style="display: none; margin-top: 12px; border-color: var(--text-faint);">
-                <div class="key-container-label">Your Referral Code — share it, get bonus time when someone uses it</div>
-                <div id="referral-text" class="key-text" style="font-size: 18px; color: var(--text-muted);">REF-XXXXXXXX</div>
-                <span id="referral-copy-hint" class="copy-hint">Click box to copy</span>
-            </div>
+    <div class="terminal">
+        <div class="steps">
+            <div class="step active" id="step-1"></div>
+            <div class="step" id="step-2"></div>
+            <div class="step" id="step-3"></div>
         </div>
-        <footer class="foot-note">DO NOT SHARE YOUR KEY WITH OTHERS</footer>
+
+        <div class="head">
+            <div id="status-eyebrow">verifying</div>
+            <div id="status-title">Authenticating</div>
+            <div id="status-subtitle">Establishing secure connection to the server...</div>
+        </div>
+
+        <div id="progress-area">
+            <div class="loader-row">
+                <span id="loading-spinner" class="loader"></span>
+                <span style="font-size:12px; color:var(--muted);">verifying token</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+        </div>
+
+        <div id="timer-box" class="timer">
+            <span class="label">EXPIRES IN:</span><span id="countdown" style="margin-left: 10px;">--:--:--</span><span class="ms" id="countdown-ms">.000</span>
+        </div>
+
+        <div id="key-container" class="slot" onclick="copyKey()">
+            <div class="slot-label">Your Key</div>
+            <div id="key-text" class="slot-key">RX-XXXX-XXXX</div>
+            <span id="copy-hint" class="slot-hint">Click box to copy</span>
+        </div>
+
+        <div id="referral-container" class="slot" onclick="copyReferralCode()" style="display: none; margin-top: 12px; border-color: var(--faint);">
+            <div class="slot-label">Your Referral Code — share it, get bonus time when someone uses it</div>
+            <div id="referral-text" class="slot-key" style="font-size: 16px; color: var(--muted);">REF-XXXXXXXX</div>
+            <span id="referral-copy-hint" class="slot-hint">Click box to copy</span>
+        </div>
+
+        <div class="foot">DO NOT SHARE YOUR KEY WITH OTHERS</div>
     </div>
+</div>
 
-    <script>
-        const BACKEND_URL = "https://rx-key-system.redace069.workers.dev";
-        let countdownInterval;
+<script>
+    const BACKEND_URL = "https://rx-key-system.redace069.workers.dev";
+    let countdownInterval;
 
-        async function verify() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            const hash = urlParams.get('hash'); // Linkvertise anti-bypass appends this automatically
+    // n = completed steps (0 = step 1 active, 1 = step 2 active, 3 = all done)
+    function setSteps(n) {
+        const ids = ["step-1", "step-2", "step-3"];
+        for (let i = 0; i < ids.length; i++) {
+            const el = document.getElementById(ids[i]);
+            el.className = "step" + (i < n ? " done" : i === n ? " active" : "");
+        }
+    }
 
-            if (!token) {
-                showError("Access Denied", "No valid token found. Generate a link from the script.");
+    async function postVerify(token, hash) {
+        const response = await fetch(`${BACKEND_URL}/verify-token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: token, hash: hash })
+        });
+        return response.json(); // throws only on network failure / non-JSON body
+    }
+
+    async function verify() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const hash = urlParams.get('hash'); // Linkvertise anti-bypass appends this automatically
+
+        if (!token) {
+            showError("Access Denied", "No valid token found. Generate a link from the script.");
+            return;
+        }
+
+        let data;
+        try {
+            data = await postVerify(token, hash);
+        } catch (err) {
+            // One retry after a network blip before declaring the server offline.
+            await new Promise(r => setTimeout(r, 2000));
+            try {
+                data = await postVerify(token, hash);
+            } catch (err2) {
+                showError("Server Offline", "Failed to connect to the validation server. Check the status page and try again.");
+                return;
+            }
+        }
+
+        document.getElementById("progress-area").style.display = "none";
+
+        if (data.success) {
+            if (data.completedAll) {
+                setSteps(3);
+                document.getElementById("status-eyebrow").innerText = "verification complete";
+                document.getElementById("status-title").innerText = "Key Unlocked";
+                document.getElementById("status-subtitle").innerText = "Your unique hardware key is ready below.";
+
+                document.getElementById("key-text").innerText = data.key;
+                document.getElementById("key-container").style.display = "block";
+
+                if (data.referralCode) {
+                    document.getElementById("referral-text").innerText = data.referralCode;
+                    document.getElementById("referral-container").style.display = "block";
+                }
+
+                document.getElementById("timer-box").style.display = "block";
+                startTimer(data.expires);
+            } else {
+                setSteps(1);
+                document.getElementById("status-eyebrow").innerText = "checkpoint";
+                document.getElementById("status-title").innerText = "Checkpoint Reached";
+                document.getElementById("status-subtitle").innerText = "Routing you to the final destination...";
+                setTimeout(() => { window.location.href = data.nextLink; }, 1000);
+            }
+        } else {
+            // Includes the min-time "too fast" message — wait and refresh, the
+            // token is NOT consumed on those, so refreshing after waiting works.
+            showError("Auth Failed", data.message || "Invalid or expired token.");
+        }
+    }
+
+    function startTimer(expirationTime) {
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            const now = Date.now();
+            const distance = expirationTime - now;
+
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                const box = document.getElementById("timer-box");
+                box.innerHTML = "KEY HAS EXPIRED";
+                box.style.color = "var(--accent)";
+                box.style.borderColor = "rgba(217,83,79,0.3)";
                 return;
             }
 
-            try {
-                const response = await fetch(`${BACKEND_URL}/verify-token`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: token, hash: hash })
-                });
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            const millis = Math.floor(distance % 1000);
 
-                const data = await response.json();
-                document.getElementById("progress-area").style.display = "none";
+            document.getElementById("countdown").innerText =
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById("countdown-ms").innerText = `.${millis.toString().padStart(3, '0')}`;
+        }, 47); // sub-second tick so the milliseconds actually move
+    }
 
-                if (data.success) {
-                    if (data.completedAll) {
-                        document.getElementById("status-eyebrow").innerText = "verification complete";
-                        document.getElementById("status-title").innerText = "Key Unlocked";
-                        document.getElementById("status-subtitle").innerText = "Your unique hardware key is ready below.";
+    function showError(title, message) {
+        document.getElementById("progress-area").style.display = "none";
+        document.getElementById("status-title").innerText = title;
+        document.getElementById("status-title").style.color = "var(--accent)";
+        document.getElementById("status-subtitle").innerText = message;
+        document.getElementById("status-eyebrow").innerText = "error";
+    }
 
-                        document.getElementById("key-text").innerText = data.key;
-                        document.getElementById("key-container").style.display = "block";
+    function copyKey() {
+        const keyText = document.getElementById("key-text").innerText;
+        navigator.clipboard.writeText(keyText).catch(() => {});
+        const hint = document.getElementById("copy-hint");
+        hint.innerText = "COPIED TO CLIPBOARD";
+        hint.style.color = "var(--accent)";
+        setTimeout(() => {
+            hint.innerText = "Click box to copy";
+            hint.style.color = "var(--muted)";
+        }, 2000);
+    }
 
-                        if (data.referralCode) {
-                            document.getElementById("referral-text").innerText = data.referralCode;
-                            document.getElementById("referral-container").style.display = "block";
-                        }
+    function copyReferralCode() {
+        const refText = document.getElementById("referral-text").innerText;
+        navigator.clipboard.writeText(refText).catch(() => {});
+        const hint = document.getElementById("referral-copy-hint");
+        hint.innerText = "COPIED TO CLIPBOARD";
+        hint.style.color = "var(--text)";
+        setTimeout(() => {
+            hint.innerText = "Click box to copy";
+            hint.style.color = "var(--muted)";
+        }, 2000);
+    }
 
-                        document.getElementById("timer-box").style.display = "block";
-                        startTimer(data.expires);
-                    } else {
-                        document.getElementById("status-eyebrow").innerText = "checkpoint";
-                        document.getElementById("status-title").innerText = "Checkpoint Reached";
-                        document.getElementById("status-subtitle").innerText = "Routing you to the final destination...";
-                        setTimeout(() => { window.location.href = data.nextLink; }, 1000);
-                    }
-                } else {
-                    showError("Auth Failed", data.message || "Invalid or expired token.");
-                }
-            } catch (err) {
-                showError("Server Offline", "Failed to connect to the validation server.");
-            }
-        }
-
-        function startTimer(expirationTime) {
-            clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                const now = Date.now();
-                const distance = expirationTime - now;
-
-                if (distance < 0) {
-                    clearInterval(countdownInterval);
-                    const box = document.getElementById("timer-box");
-                    box.innerHTML = "KEY HAS EXPIRED";
-                    box.style.color = "var(--accent)";
-                    box.style.borderColor = "rgba(255,42,42,0.3)";
-                    return;
-                }
-
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                const millis = Math.floor(distance % 1000);
-
-                document.getElementById("countdown").innerText =
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById("countdown-ms").innerText = `.${millis.toString().padStart(3, '0')}`;
-            }, 47); // sub-second tick so the milliseconds actually move
-        }
-
-        function showError(title, message) {
-            document.getElementById("progress-area").style.display = "none";
-            document.getElementById("status-title").innerText = title;
-            document.getElementById("status-title").style.color = "var(--accent)";
-            document.getElementById("status-subtitle").innerText = message;
-            document.getElementById("status-eyebrow").innerText = "error";
-        }
-
-        function copyKey() {
-            const keyText = document.getElementById("key-text").innerText;
-            navigator.clipboard.writeText(keyText);
-            const hint = document.getElementById("copy-hint");
-            hint.innerText = "COPIED TO CLIPBOARD";
-            hint.style.color = "var(--accent)";
-            setTimeout(() => {
-                hint.innerText = "Click box to copy";
-                hint.style.color = "var(--text-muted)";
-            }, 2000);
-        }
-
-        function copyReferralCode() {
-            const refText = document.getElementById("referral-text").innerText;
-            navigator.clipboard.writeText(refText);
-            const hint = document.getElementById("referral-copy-hint");
-            hint.innerText = "COPIED TO CLIPBOARD";
-            hint.style.color = "var(--text-main)";
-            setTimeout(() => {
-                hint.innerText = "Click box to copy";
-                hint.style.color = "var(--text-muted)";
-            }, 2000);
-        }
-
-        verify();
-    </script>
+    verify();
+</script>
 </body>
 </html>
