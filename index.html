@@ -203,7 +203,7 @@
     </div>
 </div>
 
-<!-- XP skid wall — shown to browsers without a token or with an invalid one -->
+<!-- XP skid wall — shown to browsers without a token or with an unknown one -->
 <div id="wall">
     <div id="stage"></div>
     <div id="taskbar">
@@ -412,8 +412,8 @@
         document.getElementById('wall').classList.add('show');
 
         // Optional: pull live messages from the worker's Troll tab
-        // (/troll-messages endpoint — see the worker snippet). Silently
-        // falls back to the embedded list above if it isn't deployed.
+        // (/troll-messages endpoint). Silently falls back to the embedded
+        // list above if it isn't deployed.
         fetch(`${BACKEND_URL}/troll-messages`)
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (d) {
@@ -479,6 +479,11 @@
                 document.getElementById("status-subtitle").innerText = "Routing you to the final destination...";
                 setTimeout(() => { window.location.href = data.nextLink; }, 1000);
             }
+        } else if (data.reason === "expired" || data.reason === "suspended" || data.reason === "terminated") {
+            // The token mapped to a REAL key that has since run out (16h) or
+            // was suspended/terminated by an admin. A known former customer —
+            // clean expiry screen with the next step, never the skid wall.
+            showKeyExpired(data.message);
         } else if (status >= 500) {
             // Server error — infrastructure, not skidding. Clean message.
             showError("Server Error", data.message || "Something went wrong on the server. Try again in a moment.");
@@ -487,9 +492,19 @@
             // generated (paste it). These must stay readable, not walled.
             showError("Hold On", data.message || "Invalid or expired token.");
         } else {
-            // Invalid / expired / terminated token or blacklisted device — wall them.
+            // Unknown/garbage token or blacklisted device — wall them.
             startSkidWall();
         }
+    }
+
+    // Friendly amber screen for expired/suspended/terminated keys.
+    function showKeyExpired(message) {
+        document.getElementById("progress-area").style.display = "none";
+        document.getElementById("status-eyebrow").innerText = "session";
+        document.getElementById("status-title").innerText = "Key Expired";
+        document.getElementById("status-title").style.color = "var(--amber)";
+        document.getElementById("status-subtitle").innerText = message ||
+            "Your key has run out. Go back to your executor and press GET KEY for a fresh link — two checkpoints, about two minutes.";
     }
 
     function startTimer(expirationTime) {
