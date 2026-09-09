@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecting…</title>
+<style>
+  body { background:#0b0d0f; color:#7d868c; font-family:'IBM Plex Mono',monospace; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; font-size:12px; letter-spacing:2px; }
+</style>
+</head>
+<body>
+REDIRECTING…
+<script>
+  // LootLabs checkpoint landing page. Exists ONLY so checkpoint 1 and
+  // checkpoint 2 have different destination URLs (LootLabs dedupes dashboard
+  // links by destination — same URL = link 2 replaces link 1). Bounces
+  // instantly to the real key page with the token intact.
+  location.replace("/" + location.search);
+</script>
+</body>
+</html>
