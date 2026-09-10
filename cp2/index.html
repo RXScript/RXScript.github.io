@@ -1,21 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecting…</title>
-<style>
-  body { background:#0b0d0f; color:#7d868c; font-family:'IBM Plex Mono',monospace; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; font-size:12px; letter-spacing:2px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key System | Checkpoint 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #d9534f;
+            --accent-dim: rgba(217,83,79,0.18);
+            --bg: #0b0d0f;
+            --panel: #111417;
+            --panel-edge: #1e2327;
+            --inset: #0a0c0e;
+            --text: #e6e9ea;
+            --muted: #7d868c;
+            --faint: #3d4247;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0; padding: 24px;
+        }
+        .wrap { width: 100%; max-width: 400px; }
+        .strip {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint);
+            margin-bottom: 8px; padding: 0 4px;
+        }
+        .strip .live { display: flex; align-items: center; gap: 6px; }
+        .strip .dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+            box-shadow: 0 0 6px var(--accent); animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .terminal {
+            background: var(--panel); border: 1px solid var(--panel-edge);
+            border-radius: 8px; overflow: hidden;
+        }
+        .steps { display: flex; padding: 16px 22px 0; gap: 6px; }
+        .step { flex: 1; height: 3px; border-radius: 2px; background: var(--panel-edge); }
+        .step.active { background: var(--accent); opacity: 0.5; }
+        .step.done { background: var(--accent); }
+        .head { padding: 18px 22px 4px; }
+        .eyebrow {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent);
+            display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+        }
+        .eyebrow::before { content: "//"; color: var(--faint); }
+        .title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 24px; }
+        .subtitle { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+        .body { padding: 18px 22px 4px; }
+        .loader-row { display: flex; align-items: center; gap: 12px; }
+        .loader {
+            width: 18px; height: 18px; min-width: 18px;
+            border: 2px solid var(--panel-edge); border-top-color: var(--accent);
+            border-radius: 50%; display: inline-block;
+            animation: rotation 0.8s linear infinite;
+        }
+        @keyframes rotation { to { transform: rotate(360deg); } }
+        .loader-text { font-size: 12px; color: var(--muted); }
+        .progress-track {
+            height: 2px; width: 100%; background: var(--panel-edge);
+            margin: 18px 0 4px; overflow: hidden; position: relative;
+        }
+        .progress-fill {
+            position: absolute; top: 0; left: -40%; bottom: 0; width: 40%;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: sweep 1.4s ease-in-out infinite;
+        }
+        @keyframes sweep { to { left: 100%; } }
+        .foot {
+            padding: 16px 22px; border-top: 1px solid var(--panel-edge); margin-top: 20px;
+            font-size: 10px; color: var(--faint); text-align: center; letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
-REDIRECTING…
+
+<div class="wrap">
+    <div class="strip"><span class="live"><span class="dot"></span>key terminal</span><span>checkpoint 2</span></div>
+
+    <div class="terminal">
+        <div class="steps">
+            <div class="step done"></div>
+            <div class="step active"></div>
+            <div class="step"></div>
+        </div>
+
+        <div class="head">
+            <div class="eyebrow">verifying</div>
+            <div class="title">Checkpoint 2</div>
+            <div class="subtitle">Ad chain completed — routing you to key generation.</div>
+        </div>
+
+        <div class="body">
+            <div class="loader-row">
+                <span class="loader"></span>
+                <span class="loader-text">redirecting to key terminal…</span>
+            </div>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+        </div>
+
+        <div class="foot">DO NOT SHARE YOUR KEY WITH OTHERS</div>
+    </div>
+</div>
+
 <script>
-  // LootLabs checkpoint landing page. Exists ONLY so checkpoint 1 and
-  // checkpoint 2 have different destination URLs (LootLabs dedupes dashboard
-  // links by destination — same URL = link 2 replaces link 1). Bounces
-  // instantly to the real key page with the token intact.
-  location.replace("/" + location.search);
+    // LootLabs checkpoint 2 landing page. Exists ONLY so checkpoint 1 and
+    // checkpoint 2 have different destination URLs (LootLabs dedupes
+    // dashboard links by destination). Bounces to the real key page
+    // with the token intact after a brief moment so this page is visible.
+    setTimeout(function () {
+        location.replace("/" + location.search);
+    }, 1000);
 </script>
+
 </body>
 </html>
