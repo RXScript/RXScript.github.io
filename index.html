@@ -530,10 +530,17 @@
     }
 
     // Note: verify() is called by onTurnstileComplete when the CAPTCHA
-    // solves. If Turnstile isn't configured (no widget rendered), we call
-    // it after a short delay as a fallback.
+    // solves. If Turnstile isn't configured, or its script failed to load
+    // (blocked by an ad-blocker, network issue, etc.), the widget will
+    // never fire onTurnstileComplete — so after a short delay we treat it
+    // as solved and proceed. Without this, turnstileSolved would stay
+    // false forever and verify() would keep bailing out on its own guard,
+    // leaving the user stuck on "Authenticating..." permanently.
     setTimeout(function() {
-        if (!turnstileSolved) verify();
+        if (!turnstileSolved) {
+            turnstileSolved = true;
+            verify();
+        }
     }, 3000);
 </script>
 </body>
