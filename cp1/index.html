@@ -115,8 +115,12 @@
     // checkpoint 2 have different destination URLs (LootLabs dedupes
     // dashboard links by destination). Bounces to the real key page
     // with the token intact after a brief moment so this page is visible.
+    // Relative path (not "/") so this still works if GitHub Pages is
+    // deployed under a project subpath (username.github.io/reponame/)
+    // instead of the domain root — this file lives at .../cp1/index.html,
+    // so "../" lands back on the site's own index.html either way.
     setTimeout(function () {
-        location.replace("/" + location.search);
+        location.replace("../" + location.search);
     }, 1000);
 </script>
 
